@@ -15,9 +15,9 @@ func Run(service Service) error {
 		return err
 	}
 
-	sigChan := make(chan os.Signal)
-	signalNotify(sigChan, os.Interrupt, os.Kill)
-	<-sigChan
+	signalChan := make(chan os.Signal, 1)
+	signalNotify(signalChan, os.Interrupt, os.Kill)
+	<-signalChan
 
 	return service.Stop()
 }

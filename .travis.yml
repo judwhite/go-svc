@@ -1,0 +1,27 @@
+language: go
+sudo: false
+
+go:
+  - 1.5
+  - 1.6
+  - tip
+
+matrix:
+  allow_failures:
+    - go: tip
+
+env:
+ - GO15VENDOREXPERIMENT=1
+
+before_install:
+ - go get -u -v github.com/kisielk/errcheck
+ - go get -u -v github.com/golang/lint/golint
+ - go get -u -v honnef.co/go/simple/cmd/gosimple
+ - go get -u -v honnef.co/go/unused/cmd/unused
+ - go get -u -v github.com/mdempsky/unconvert
+ - go get -u -v github.com/client9/misspell/cmd/misspell
+ - go get -u -v github.com/gordonklaus/ineffassign
+ - go get -u -v github.com/fzipp/gocyclo
+
+script:
+ - cd svc && ./test.sh

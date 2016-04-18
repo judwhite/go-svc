@@ -1,9 +1,14 @@
 # go-svc
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/judwhite/go-svc)](https://goreportcard.com/report/github.com/judwhite/go-svc)
+[![MIT License](http://img.shields.io/:license-mit-blue.svg)][![Go Report Card](https://goreportcard.com/badge/github.com/judwhite/go-svc)](https://goreportcard.com/report/github.com/judwhite/go-svc)
 [![Build Status](https://travis-ci.org/judwhite/go-svc.svg?branch=master)](https://travis-ci.org/judwhite/go-svc)
 
 Go Windows Service wrapper that plays nice with Linux. Windows tests [here](https://github.com/judwhite/go-svc/blob/master/svc/svc_windows_test.go).
+
+## Project Status
+
+- Used in Production.
+- Maintained. Issues and Pull Requests will be responded to.
 
 ## Install
 
@@ -74,6 +79,10 @@ func (p *program) Stop() error {
 ## More Examples
 
 See the [example](https://github.com/judwhite/go-svc/tree/master/example) directory for more examples, including installing and uninstalling binaries built in Go as Windows services.
+
+## Similar Projects
+
+- https://github.com/kardianos/service
 
 ## License
 

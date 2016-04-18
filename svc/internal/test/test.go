@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// Equal asserts two parameters are equal by using reflect.DeepEqual.
 func Equal(t *testing.T, expected, actual interface{}) {
 	if !reflect.DeepEqual(expected, actual) {
 		_, file, line, _ := runtime.Caller(1)
@@ -16,6 +17,7 @@ func Equal(t *testing.T, expected, actual interface{}) {
 	}
 }
 
+// NotEqual asserts two parameters are not equal by using reflect.DeepEqual.
 func NotEqual(t *testing.T, expected, actual interface{}) {
 	if !reflect.DeepEqual(expected, actual) {
 		_, file, line, _ := runtime.Caller(1)
@@ -25,6 +27,7 @@ func NotEqual(t *testing.T, expected, actual interface{}) {
 	}
 }
 
+// Nil asserts the parameter is nil.
 func Nil(t *testing.T, object interface{}) {
 	if !isNil(object) {
 		_, file, line, _ := runtime.Caller(1)
@@ -34,6 +37,7 @@ func Nil(t *testing.T, object interface{}) {
 	}
 }
 
+// NotNil asserts the parameter is not nil.
 func NotNil(t *testing.T, object interface{}) {
 	if isNil(object) {
 		_, file, line, _ := runtime.Caller(1)

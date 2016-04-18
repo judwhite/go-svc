@@ -24,4 +24,4 @@ before_install:
  - go get -u -v github.com/fzipp/gocyclo
 
 script:
- - cd svc && ./test.sh
+ - cd svc && chmod +x test.sh && ./test.sh

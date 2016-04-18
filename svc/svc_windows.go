@@ -21,7 +21,9 @@ type windowsService struct {
 	Name          string
 }
 
-// Run runs your Service.
+// Run runs an implementation of the Service interface.
+// Run will block until the service is stopped, encounters a non-recoverable error,
+// or an os.Interrupt/os.Kill signal is received.
 func Run(service Service) error {
 	var err error
 

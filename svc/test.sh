@@ -1,3 +1,11 @@
+#!/bin/bash
+
+# go get -u github.com/kisielk/errcheck
+# go get -u github.com/golang/lint/golint
+# go get -u honnef.co/go/simple/cmd/gosimple
+# go get -u honnef.co/go/unused/cmd/unused
+# go get -u github.com/mdempsky/unconvert
+
 FILES=$(ls *.go)
 
 echo "Checking gofmt..."
@@ -45,6 +53,39 @@ for path in $FILES; do
 done
 
 if [ ${lintError} -ne 0 ]; then
+  exit 255
+fi
+
+echo "Checking gosimple..."
+gosimpleRes=$(gosimple .)
+if [ $? -ne 0 ]; then
+  echo "gosimple checking failed: ${gosimpleRes}!"
+  exit 255
+fi
+if [ -n "${gosimpleRes}" ]; then
+  echo "gosimple checking failed: ${gosimpleRes}"
+  exit 255
+fi
+
+echo "Checking unused..."
+unusedRes=$(unused .)
+if [ $? -ne 0 ]; then
+  echo "unused checking failed: ${unusedRes}!"
+  exit 255
+fi
+if [ -n "${unusedRes}" ]; then
+  echo "unused checking failed: ${unusedRes}"
+  exit 255
+fi
+
+echo "Checking unconvert..."
+unconvertRes=$(unconvert .)
+if [ $? -ne 0 ]; then
+  echo "unconvert checking failed: ${unconvertRes}!"
+  exit 255
+fi
+if [ -n "${unconvertRes}" ]; then
+  echo "unconvert checking failed: ${unconvertRes}"
   exit 255
 fi
 

@@ -1,6 +1,6 @@
 # go-svc
 
-[![MIT License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/judwhite/go-svc/blob/master/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/judwhite/go-svc)](https://goreportcard.com/report/github.com/judwhite/go-svc)
+[![GoDoc](https://godoc.org/github.com/judwhite/go-svc/svc?status.svg)](https://godoc.org/github.com/judwhite/go-svc/svc) [![MIT License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/judwhite/go-svc/blob/master/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/judwhite/go-svc)](https://goreportcard.com/report/github.com/judwhite/go-svc)
 [![Build Status](https://travis-ci.org/judwhite/go-svc.svg?branch=master)](https://travis-ci.org/judwhite/go-svc)
 
 Go Windows Service wrapper that plays nice with Linux. Windows tests [here](https://github.com/judwhite/go-svc/blob/master/svc/svc_windows_test.go).

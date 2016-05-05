@@ -13,31 +13,33 @@ import (
 )
 
 func setupWinServiceTest(wsf *mockWinServiceFuncs) {
-	// wsfWrapper allows signalNotify, svcIsAnInteractiveSession, and svcRun
-	// to be set once. Inidivual test functions set "wsf" to add behavior.
+	// wsfWrapper allows signalNotify, svcIsInteractive, and svcRun to be set once.
+	// Inidivual test functions set "wsf" to add behavior.
 	wsfWrapper := &mockWinServiceFuncs{
-		signalNotify: func(c chan<- os.Signal, sig ...os.Signal) {
-			if c == nil {
-				panic("os/signal: Notify using nil channel")
-			}
+		mockServiceFuncs: mockServiceFuncs{
+			signalNotify: func(c chan<- os.Signal, sig ...os.Signal) {
+				if c == nil {
+					panic("os/signal: Notify using nil channel")
+				}
 
-			if wsf.signalNotify != nil {
-				wsf.signalNotify(c, sig...)
-			} else {
-				wsf1 := *wsf
-				go func() {
-					for val := range wsf1.sigChan {
-						for _, registeredSig := range sig {
-							if val == registeredSig {
-								c <- val
+				if wsf.signalNotify != nil {
+					wsf.signalNotify(c, sig...)
+				} else {
+					wsf1 := *wsf
+					go func() {
+						for val := range wsf1.sigChan {
+							for _, registeredSig := range sig {
+								if val == registeredSig {
+									c <- val
+								}
 							}
 						}
-					}
-				}()
-			}
-		},
-		svcIsInteractive: func() (bool, error) {
-			return wsf.svcIsInteractive()
+					}()
+				}
+			},
+			svcIsInteractive: func() (bool, error) {
+				return wsf.svcIsInteractive()
+			},
 		},
 		svcRun: func(name string, handler wsvc.Handler) error {
 			return wsf.svcRun(name, handler)
@@ -50,49 +52,12 @@ func setupWinServiceTest(wsf *mockWinServiceFuncs) {
 }
 
 type mockWinServiceFuncs struct {
-	signalNotify          func(chan<- os.Signal, ...os.Signal)
-	svcIsInteractive      func() (bool, error)
+	mockServiceFuncs
 	svcRun                func(string, wsvc.Handler) error
-	sigChan               chan os.Signal
 	ws                    *windowsService
 	executeReturnedBool   bool
 	executeReturnedUInt32 uint32
 	changes               []wsvc.Status
-}
-
-type mockProgram struct {
-	start func() error
-	stop  func() error
-	init  func(Environment) error
-}
-
-func (p *mockProgram) Start() error {
-	return p.start()
-}
-
-func (p *mockProgram) Stop() error {
-	return p.stop()
-}
-
-func (p *mockProgram) Init(wse Environment) error {
-	return p.init(wse)
-}
-
-func makeProgram(startCalled, stopCalled, initCalled *int) *mockProgram {
-	return &mockProgram{
-		start: func() error {
-			*startCalled++
-			return nil
-		},
-		stop: func() error {
-			*stopCalled++
-			return nil
-		},
-		init: func(wse Environment) error {
-			*initCalled++
-			return nil
-		},
-	}
 }
 
 func setWindowsServiceFuncs(isInteractive bool, onRunningSendCmd *wsvc.Cmd) (*mockWinServiceFuncs, chan<- wsvc.ChangeRequest) {
@@ -102,9 +67,11 @@ func setWindowsServiceFuncs(isInteractive bool, onRunningSendCmd *wsvc.Cmd) (*mo
 
 	var wsf *mockWinServiceFuncs
 	wsf = &mockWinServiceFuncs{
-		sigChan: make(chan os.Signal),
-		svcIsInteractive: func() (bool, error) {
-			return isInteractive, nil
+		mockServiceFuncs: mockServiceFuncs{
+			sigChan: make(chan os.Signal),
+			svcIsInteractive: func() (bool, error) {
+				return isInteractive, nil
+			},
 		},
 		svcRun: func(name string, handler wsvc.Handler) error {
 			wsf.ws = handler.(*windowsService)

@@ -2,7 +2,10 @@
 
 package svc
 
-import "os"
+import (
+	"os"
+	"syscall"
+)
 
 // Run runs your Service.
 func Run(service Service) error {
@@ -16,7 +19,7 @@ func Run(service Service) error {
 	}
 
 	signalChan := make(chan os.Signal, 1)
-	signalNotify(signalChan, os.Interrupt, os.Kill)
+	signalNotify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 
 	return service.Stop()

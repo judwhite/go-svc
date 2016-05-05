@@ -1,15 +1,5 @@
 package svc
 
-import (
-	"os"
-)
-
-type mockServiceFuncs struct {
-	signalNotify     func(chan<- os.Signal, ...os.Signal)
-	svcIsInteractive func() (bool, error)
-	sigChan          chan os.Signal
-}
-
 type mockProgram struct {
 	start func() error
 	stop  func() error

@@ -10,13 +10,21 @@ import (
 	"github.com/judwhite/go-svc/svc/internal/test"
 )
 
-func TestSignalNotify(t *testing.T) {
-	for _, osSignal := range []os.Signal{syscall.SIGINT, syscall.SIGTERM} {
-		testSignalNotify(t, osSignal)
+func TestDefaultSignalHandling(t *testing.T) {
+	signals := []os.Signal{syscall.SIGINT, syscall.SIGTERM} // default signals handled
+	for _, signal := range signals {
+		testSignalNotify(t, signal)
 	}
 }
 
-func testSignalNotify(t *testing.T, osSignal os.Signal) {
+func TestUserDefinedSignalHandling(t *testing.T) {
+	signals := []os.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP}
+	for _, signal := range signals {
+		testSignalNotify(t, signal, signals...)
+	}
+}
+
+func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
 	// arrange
 
 	// sigChan is the chan we'll send to here. if a signal matches a registered signal
@@ -45,11 +53,11 @@ func testSignalNotify(t *testing.T, osSignal os.Signal) {
 	}
 
 	go func() {
-		sigChan <- osSignal
+		sigChan <- signal
 	}()
 
 	// act
-	if err := Run(prg); err != nil {
+	if err := Run(prg, sig...); err != nil {
 		t.Fatal(err)
 	}
 

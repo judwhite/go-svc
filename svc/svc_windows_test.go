@@ -5,6 +5,7 @@ package svc
 import (
 	"errors"
 	"os"
+	"syscall"
 	"testing"
 	"time"
 
@@ -106,40 +107,10 @@ func setWindowsServiceFuncs(isInteractive bool, onRunningSendCmd *wsvc.Cmd) (*mo
 	return wsf, changeRequestChan
 }
 
-func TestWinService_RunWindowsService_Interactive(t *testing.T) {
-	// arrange / act / assert
-	for _, osSignal := range []os.Signal{os.Kill, os.Interrupt} {
-		testRunWindowsServiceInteractive(t, osSignal)
-	}
-}
-
 func TestWinService_RunWindowsService_NonInteractive(t *testing.T) {
 	for _, svcCmd := range []wsvc.Cmd{wsvc.Stop, wsvc.Shutdown} {
 		testRunWindowsServiceNonInteractive(t, svcCmd)
 	}
-}
-
-func testRunWindowsServiceInteractive(t *testing.T, osSignal os.Signal) {
-	// arrange
-	var startCalled, stopCalled, initCalled int
-	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
-
-	wsf, _ := setWindowsServiceFuncs(true, nil)
-
-	go func() {
-		wsf.sigChan <- osSignal
-	}()
-
-	// act
-	if err := Run(prg); err != nil {
-		t.Fatal(err)
-	}
-
-	// assert
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
-	test.Equal(t, 0, len(wsf.changes))
 }
 
 func testRunWindowsServiceNonInteractive(t *testing.T, svcCmd wsvc.Cmd) {
@@ -427,4 +398,41 @@ func TestRunWindowsServiceNonInteractive_StopError(t *testing.T) {
 	test.Equal(t, uint32(2), wsf.executeReturnedUInt32)
 
 	test.Equal(t, "stop error", wsf.ws.getError().Error())
+}
+
+func TestDefaultSignalHandling(t *testing.T) {
+	signals := []os.Signal{syscall.SIGINT} // default signal handled
+	for _, signal := range signals {
+		testSignalNotify(t, signal)
+	}
+}
+
+func TestUserDefinedSignalHandling(t *testing.T) {
+	signals := []os.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP}
+	for _, signal := range signals {
+		testSignalNotify(t, signal, signals...)
+	}
+}
+
+func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
+	// arrange
+	var startCalled, stopCalled, initCalled int
+	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
+
+	wsf, _ := setWindowsServiceFuncs(true, nil)
+
+	go func() {
+		wsf.sigChan <- signal
+	}()
+
+	// act
+	if err := Run(prg, sig...); err != nil {
+		t.Fatal(err)
+	}
+
+	// assert
+	test.Equal(t, 1, startCalled)
+	test.Equal(t, 1, stopCalled)
+	test.Equal(t, 1, initCalled)
+	test.Equal(t, 0, len(wsf.changes))
 }

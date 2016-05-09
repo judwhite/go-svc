@@ -8,7 +8,10 @@ import (
 )
 
 // Run runs your Service.
-func Run(service Service) error {
+//
+// Run will block until one of the signals specified in sig is received.
+// If sig is empty syscall.SIGINT and syscall.SIGTERM are used by default.
+func Run(service Service, sig ...os.Signal) error {
 	env := environment{}
 	if err := service.Init(env); err != nil {
 		return err
@@ -18,8 +21,12 @@ func Run(service Service) error {
 		return err
 	}
 
+	if len(sig) == 0 {
+		sig = []os.Signal{syscall.SIGINT, syscall.SIGTERM}
+	}
+
 	signalChan := make(chan os.Signal, 1)
-	signalNotify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	signalNotify(signalChan, sig...)
 	<-signalChan
 
 	return service.Stop()

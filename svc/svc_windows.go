@@ -5,6 +5,7 @@ package svc
 import (
 	"os"
 	"sync"
+	"syscall"
 
 	wsvc "golang.org/x/sys/windows/svc"
 )
@@ -18,13 +19,25 @@ type windowsService struct {
 	errSync       sync.Mutex
 	stopStartErr  error
 	isInteractive bool
+	signals       []os.Signal
 	Name          string
 }
 
 // Run runs an implementation of the Service interface.
-// Run will block until the service is stopped, encounters a non-recoverable error,
-// or an os.Interrupt/os.Kill signal is received.
-func Run(service Service) error {
+//
+// Run will block until the Windows Service is stopped or Ctrl+C is pressed if
+// running from the console.
+//
+// Stopping the Windows Service and Ctrl+C will call the Service's Stop method to
+// initiate a graceful shutdown.
+//
+// Note that WM_CLOSE is not handled (end task) and the Service's Stop method will
+// not be called.
+//
+// The sig parameter is to keep parity with the non-Windows API. Only syscall.SIGINT
+// (Ctrl+C) can be handled on Windows. Nevertheless, you can override the default
+// signals which are handled by specifying sig.
+func Run(service Service, sig ...os.Signal) error {
 	var err error
 
 	interactive, err := svcIsAnInteractiveSession()
@@ -32,9 +45,14 @@ func Run(service Service) error {
 		return err
 	}
 
+	if len(sig) == 0 {
+		sig = []os.Signal{syscall.SIGINT}
+	}
+
 	ws := &windowsService{
 		i:             service,
 		isInteractive: interactive,
+		signals:       sig,
 	}
 
 	if err = service.Init(ws); err != nil {
@@ -67,7 +85,7 @@ func (ws *windowsService) run() error {
 		// Return error messages from start and stop routines
 		// that get executed in the Execute method.
 		// Guarded with a mutex as it may run a different thread
-		// (callback from windows).
+		// (callback from Windows).
 		runErr := svcRun(ws.Name, ws)
 		startStopErr := ws.getError()
 		if startStopErr != nil {
@@ -78,13 +96,14 @@ func (ws *windowsService) run() error {
 		}
 		return nil
 	}
+
 	err := ws.i.Start()
 	if err != nil {
 		return err
 	}
 
 	signalChan := make(chan os.Signal, 1)
-	signalNotify(signalChan, os.Interrupt, os.Kill)
+	signalNotify(signalChan, ws.signals...)
 	<-signalChan
 
 	err = ws.i.Stop()

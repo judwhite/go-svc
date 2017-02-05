@@ -2,7 +2,6 @@ language: go
 sudo: false
 
 go:
-  - 1.5
   - 1.6
   - 1.7
   - tip
@@ -10,9 +9,6 @@ go:
 matrix:
   allow_failures:
     - go: tip
-
-env:
- - GO15VENDOREXPERIMENT=1
 
 before_install:
  - go get -u -v github.com/kisielk/errcheck

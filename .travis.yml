@@ -4,6 +4,7 @@ sudo: false
 go:
   - 1.5
   - 1.6
+  - 1.7
   - tip
 
 matrix:
@@ -16,12 +17,13 @@ env:
 before_install:
  - go get -u -v github.com/kisielk/errcheck
  - go get -u -v github.com/golang/lint/golint
- - go get -u -v honnef.co/go/simple/cmd/gosimple
- - go get -u -v honnef.co/go/unused/cmd/unused
+ - go get -u -v honnef.co/go/tools/cmd/gosimple
+ - go get -u -v honnef.co/go/tools/cmd/unused
  - go get -u -v github.com/mdempsky/unconvert
  - go get -u -v github.com/client9/misspell/cmd/misspell
  - go get -u -v github.com/gordonklaus/ineffassign
+ - go get -u -v honnef.co/go/tools/cmd/staticcheck
  - go get -u -v github.com/fzipp/gocyclo
 
 script:
- - cd svc && chmod +x test.sh && ./test.sh
+ - chmod +x check.sh && chmod +x test.sh && ./check.sh && ./test.sh

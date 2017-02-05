@@ -7,6 +7,8 @@ import (
 	"sync"
 	"syscall"
 
+	"path/filepath"
+
 	wsvc "golang.org/x/sys/windows/svc"
 )
 
@@ -53,6 +55,15 @@ func Run(service Service, sig ...os.Signal) error {
 		i:             service,
 		isInteractive: interactive,
 		signals:       sig,
+	}
+
+	if ws.IsWindowsService() {
+		// the working directory for a Windows Service is C:\Windows\System32
+		// this is almost certainly not what the user wants.
+		dir := filepath.Dir(os.Args[0])
+		if err = os.Chdir(dir); err != nil {
+			return err
+		}
 	}
 
 	if err = service.Init(ws); err != nil {

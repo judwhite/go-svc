@@ -21,7 +21,7 @@ type Service interface {
 	// Start is called after Init. This method must be non-blocking.
 	Start() error
 
-	// Stop is called in response to os.Interrupt, os.Kill, or when a
+	// Stop is called in response to syscall.SIGINT, syscall.SIGTERM, or when a
 	// Windows Service is stopped.
 	Stop() error
 }
@@ -29,6 +29,6 @@ type Service interface {
 // Environment contains information about the environment
 // your application is running in.
 type Environment interface {
-	// IsWindowsService returns true if the program is running as a Windows Service.
+	// IsWindowsService reports whether the program is running as a Windows Service.
 	IsWindowsService() bool
 }

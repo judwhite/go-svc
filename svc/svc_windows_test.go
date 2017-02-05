@@ -73,7 +73,11 @@ func setWindowsServiceFuncs(isInteractive bool, onRunningSendCmd *wsvc.Cmd) (*mo
 			return isInteractive, nil
 		},
 		svcRun: func(name string, handler wsvc.Handler) error {
-			wsf.ws = handler.(*windowsService)
+			ws, ok := handler.(*windowsService)
+			if !ok {
+				return errors.New("handler is not a windowsService")
+			}
+			wsf.ws = ws
 			wsf.executeReturnedBool, wsf.executeReturnedUInt32 = handler.Execute(nil, changeRequestChan, changesChan)
 			done <- struct{}{}
 			return nil
@@ -261,7 +265,11 @@ func TestRunWindowsServiceNonInteractive_RunError(t *testing.T) {
 	svcStop := wsvc.Stop
 	wsf, _ := setWindowsServiceFuncs(false, &svcStop)
 	wsf.svcRun = func(name string, handler wsvc.Handler) error {
-		wsf.ws = handler.(*windowsService)
+		ws, ok := handler.(*windowsService)
+		if !ok {
+			return errors.New("handler is not a windowsService")
+		}
+		wsf.ws = ws
 		return errors.New("wsvc.Run error")
 	}
 

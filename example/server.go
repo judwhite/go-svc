@@ -29,27 +29,34 @@ func (s *server) stop() error {
 }
 
 func (s *server) startSender() {
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(20 * time.Millisecond)
+	defer s.wg.Done()
 	count := 1
 	for {
 		select {
 		case <-ticker.C:
-			s.data <- count
-			count++
+			select {
+			case s.data <- count:
+				count++
+			case <-s.exit:
+				// if the other goroutine exits there'll be no one to receive on the data chan,
+				// and this goroutine could block. you can simulate this by putting a time.Sleep
+				// inside startReceiver's receive on s.data and a log.Println here
+				return
+			}
 		case <-s.exit:
-			s.wg.Done()
 			return
 		}
 	}
 }
 
 func (s *server) startReceiver() {
+	defer s.wg.Done()
 	for {
 		select {
 		case n := <-s.data:
 			log.Printf("%d\n", n)
 		case <-s.exit:
-			s.wg.Done()
 			return
 		}
 	}

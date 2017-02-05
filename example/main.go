@@ -26,12 +26,12 @@ func main() {
 
 	// call svc.Run to start your program/service
 	// svc.Run will call Init, Start, and Stop
-	if err := svc.Run(prg); err != nil {
+	if err := svc.Run(&prg); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (p program) Init(env svc.Environment) error {
+func (p *program) Init(env svc.Environment) error {
 	log.Printf("is win service? %v\n", env.IsWindowsService())
 
 	// write to "example.log" when running as a Windows Service
@@ -56,13 +56,13 @@ func (p program) Init(env svc.Environment) error {
 	return nil
 }
 
-func (p program) Start() error {
+func (p *program) Start() error {
 	log.Printf("Starting...\n")
 	go p.svr.start()
 	return nil
 }
 
-func (p program) Stop() error {
+func (p *program) Stop() error {
 	log.Printf("Stopping...\n")
 	if err := p.svr.stop(); err != nil {
 		return err

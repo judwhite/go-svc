@@ -4,10 +4,9 @@ package svc
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 	"syscall"
-
-	"path/filepath"
 
 	wsvc "golang.org/x/sys/windows/svc"
 )

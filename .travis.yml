@@ -12,6 +12,7 @@ matrix:
     - go: tip
 
 before_install:
+ - go get -u -v golang.org/x/tools/cmd/goimports
  - go get -u -v github.com/kisielk/errcheck
  - go get -u -v github.com/golang/lint/golint
  - go get -u -v github.com/mdempsky/unconvert

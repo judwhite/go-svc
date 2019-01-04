@@ -34,14 +34,14 @@ for dir in $DIRS; do
     rm cover.out
   fi
 
-  echo "go test -v -timeout 3m --race -cpu 1"
-  go test -v -timeout 3m --race -cpu 1
+  echo "go test -v -timeout 3m -race -vet off -cpu 1"
+  go test -v -timeout 3m -race -vet off -cpu 1
   if [ $? -ne 0 ]; then
     exit 255
   fi
 
-  echo "go test -v -timeout 3m --race -cpu 4"
-  go test -v -timeout 3m --race -cpu 4
+  echo "go test -v -timeout 3m -race -vet off -cpu 4"
+  go test -v -timeout 3m -race -vet off -cpu 4
   if [ $? -ne 0 ]; then
     exit 255
   fi

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# go get -u -v golang.org/x/tools/cmd/goimports
 # go get -u github.com/kisielk/errcheck
 # go get -u github.com/golang/lint/golint
 # go get -u github.com/mdempsky/unconvert
@@ -63,13 +64,16 @@ if [ -n "${fmtRes}" ]; then
   hasErr=1
 fi
 
+echo "- Checking goimports..."
+impRes=$(goimports -l -d $FILES)
+if [ -n "${impRes}" ]; then
+  echo "goimports checking failed: ${impRes}"
+  hasErr=1
+fi
+
 echo "- Checking errcheck..."
-
-echo "(*os.File).Close">errcheck_excludes.txt
-echo "(io.Closer).Close">>errcheck_excludes.txt
-
 for dir in $DIRS; do
-  errRes=$(errcheck -blank -asserts -exclude errcheck_excludes.txt ${dir})
+  errRes=$(errcheck -blank -asserts ${dir})
   if [ $? -ne 0 ]; then
     echo "errcheck checking failed: ${errRes}"
     hasErr=1
@@ -79,20 +83,9 @@ for dir in $DIRS; do
   fi
 done
 
-rm errcheck_excludes.txt
-
-echo "- Checking govet..."
-
-for dir in $DIRS; do
-  go vet ${dir}
-  if [ $? -ne 0 ]; then
-    hasErr=1
-  fi
-done
-
-echo "- Checking govet -shadow..."
+echo "- Checking go tool vet -all -shadow..."
 for path in $FILES; do
-  go tool vet -shadow ${path}
+  go tool vet -all -shadow ${path}
   if [ $? -ne 0 ]; then
     hasErr=1
   fi
@@ -101,7 +94,7 @@ done
 echo "- Checking golint..."
 lintError=0
 for path in $FILES; do
-  lintRes=$(golint ${path})
+  lintRes=$(golint -set_exit_status ${path})
   if [ -n "${lintRes}" ]; then
     echo "golint checking ${path} failed: ${lintRes}"
     hasErr=1
@@ -121,7 +114,7 @@ for dir in $DIRS; do
 done
 
 echo "- Checking misspell..."
-misspellRes=$(misspell $FILES)
+misspellRes=$(misspell -error $FILES)
 if [ $? -ne 0 ]; then
   echo "misspell checking failed: ${misspellRes}"
   hasErr=1

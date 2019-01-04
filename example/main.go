@@ -20,7 +20,9 @@ func main() {
 	}
 	defer func() {
 		if prg.LogFile != nil {
-			prg.LogFile.Close()
+			if closeErr := prg.LogFile.Close(); closeErr != nil {
+				log.Printf("error closing '%s': %v\n", prg.LogFile.Name(), closeErr)
+			}
 		}
 	}()
 

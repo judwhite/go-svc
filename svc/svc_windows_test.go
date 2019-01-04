@@ -5,6 +5,9 @@ package svc
 import (
 	"errors"
 	"os"
+	"path/filepath"
+	"reflect"
+	"runtime"
 	"syscall"
 	"testing"
 	"time"
@@ -443,7 +446,6 @@ func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
 	equal(t, 1, initCalled)
 	equal(t, 0, len(wsf.changes))
 }
-
 
 func equal(t *testing.T, expected, actual interface{}) {
 	if !reflect.DeepEqual(expected, actual) {

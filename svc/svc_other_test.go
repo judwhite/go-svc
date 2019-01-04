@@ -6,8 +6,6 @@ import (
 	"os"
 	"syscall"
 	"testing"
-
-	"github.com/judwhite/go-svc/svc/internal/test"
 )
 
 func TestDefaultSignalHandling(t *testing.T) {
@@ -62,7 +60,13 @@ func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
 	}
 
 	// assert
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
+	if startCalled != 1 {
+		t.Errorf("startCalled, want: 1 got: %d", startCalled)
+	}
+	if stopCalled != 1 {
+		t.Errorf("stopCalled, want: 1 got: %d", stopCalled)
+	}
+	if initCalled != 1 {
+		t.Errorf("initCalled, want: 1 got: %d", initCalled)
+	}
 }

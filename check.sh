@@ -108,30 +108,6 @@ for path in $FILES; do
   fi
 done
 
-echo "- Checking gosimple..."
-for dir in $DIRS; do
-  gosimpleRes=$(gosimple ${dir})
-  if [ $? -ne 0 ]; then
-    echo "gosimple checking failed: ${gosimpleRes}"
-    hasErr=1
-  elif [ -n "${gosimpleRes}" ]; then
-    echo "gosimple checking failed: ${gosimpleRes}"
-    hasErr=1
-  fi
-done
-
-echo "- Checking unused..."
-for dir in $DIRS; do
-  unusedRes=$(unused ${dir})
-  if [ $? -ne 0 ]; then
-    echo "unused checking failed: ${unusedRes}"
-    hasErr=1
-  elif [ -n "${unusedRes}" ]; then
-    echo "unused checking failed: ${unusedRes}"
-    hasErr=1
-  fi
-done
-
 echo "- Checking unconvert..."
 for dir in $DIRS; do
   unconvertRes=$(unconvert ${dir})

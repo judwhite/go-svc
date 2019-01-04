@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/judwhite/go-svc/svc/internal/test"
 	wsvc "golang.org/x/sys/windows/svc"
 )
 
@@ -132,19 +131,19 @@ func testRunWindowsServiceNonInteractive(t *testing.T, svcCmd wsvc.Cmd) {
 	// assert
 	changes := wsf.changes
 
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 1, startCalled)
+	equal(t, 1, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 3, len(changes))
-	test.Equal(t, wsvc.StartPending, changes[0].State)
-	test.Equal(t, wsvc.Running, changes[1].State)
-	test.Equal(t, wsvc.StopPending, changes[2].State)
+	equal(t, 3, len(changes))
+	equal(t, wsvc.StartPending, changes[0].State)
+	equal(t, wsvc.Running, changes[1].State)
+	equal(t, wsvc.StopPending, changes[2].State)
 
-	test.Equal(t, false, wsf.executeReturnedBool)
-	test.Equal(t, uint32(0), wsf.executeReturnedUInt32)
+	equal(t, false, wsf.executeReturnedBool)
+	equal(t, uint32(0), wsf.executeReturnedUInt32)
 
-	test.Nil(t, wsf.ws.getError())
+	assertNil(t, wsf.ws.getError())
 }
 
 func TestRunWindowsServiceNonInteractive_StartError(t *testing.T) {
@@ -163,21 +162,21 @@ func TestRunWindowsServiceNonInteractive_StartError(t *testing.T) {
 	err := Run(prg)
 
 	// assert
-	test.Equal(t, "start error", err.Error())
+	equal(t, "start error", err.Error())
 
 	changes := wsf.changes
 
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 0, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 1, startCalled)
+	equal(t, 0, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 1, len(changes))
-	test.Equal(t, wsvc.StartPending, changes[0].State)
+	equal(t, 1, len(changes))
+	equal(t, wsvc.StartPending, changes[0].State)
 
-	test.Equal(t, true, wsf.executeReturnedBool)
-	test.Equal(t, uint32(1), wsf.executeReturnedUInt32)
+	equal(t, true, wsf.executeReturnedBool)
+	equal(t, uint32(1), wsf.executeReturnedUInt32)
 
-	test.Equal(t, "start error", wsf.ws.getError().Error())
+	equal(t, "start error", wsf.ws.getError().Error())
 }
 
 func TestRunWindowsServiceInteractive_StartError(t *testing.T) {
@@ -195,15 +194,15 @@ func TestRunWindowsServiceInteractive_StartError(t *testing.T) {
 	err := Run(prg)
 
 	// assert
-	test.Equal(t, "start error", err.Error())
+	equal(t, "start error", err.Error())
 
 	changes := wsf.changes
 
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 0, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 1, startCalled)
+	equal(t, 0, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 0, len(changes))
+	equal(t, 0, len(changes))
 }
 
 func TestRunWindowsService_BeforeStartError(t *testing.T) {
@@ -221,15 +220,15 @@ func TestRunWindowsService_BeforeStartError(t *testing.T) {
 	err := Run(prg)
 
 	// assert
-	test.Equal(t, "before start error", err.Error())
+	equal(t, "before start error", err.Error())
 
 	changes := wsf.changes
 
-	test.Equal(t, 0, startCalled)
-	test.Equal(t, 0, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 0, startCalled)
+	equal(t, 0, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 0, len(changes))
+	equal(t, 0, len(changes))
 }
 
 func TestRunWindowsService_IsAnInteractiveSessionError(t *testing.T) {
@@ -246,15 +245,15 @@ func TestRunWindowsService_IsAnInteractiveSessionError(t *testing.T) {
 	err := Run(prg)
 
 	// assert
-	test.Equal(t, "IsAnInteractiveSession error", err.Error())
+	equal(t, "IsAnInteractiveSession error", err.Error())
 
 	changes := wsf.changes
 
-	test.Equal(t, 0, startCalled)
-	test.Equal(t, 0, stopCalled)
-	test.Equal(t, 0, initCalled)
+	equal(t, 0, startCalled)
+	equal(t, 0, stopCalled)
+	equal(t, 0, initCalled)
 
-	test.Equal(t, 0, len(changes))
+	equal(t, 0, len(changes))
 }
 
 func TestRunWindowsServiceNonInteractive_RunError(t *testing.T) {
@@ -277,17 +276,17 @@ func TestRunWindowsServiceNonInteractive_RunError(t *testing.T) {
 	err := Run(prg)
 
 	// assert
-	test.Equal(t, "wsvc.Run error", err.Error())
+	equal(t, "wsvc.Run error", err.Error())
 
 	changes := wsf.changes
 
-	test.Equal(t, 0, startCalled)
-	test.Equal(t, 0, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 0, startCalled)
+	equal(t, 0, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 0, len(changes))
+	equal(t, 0, len(changes))
 
-	test.Nil(t, wsf.ws.getError())
+	assertNil(t, wsf.ws.getError())
 }
 
 func TestRunWindowsServiceNonInteractive_Interrogate(t *testing.T) {
@@ -331,20 +330,20 @@ func TestRunWindowsServiceNonInteractive_Interrogate(t *testing.T) {
 	// assert
 	changes := wsf.changes
 
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 1, startCalled)
+	equal(t, 1, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 4, len(changes))
-	test.Equal(t, wsvc.StartPending, changes[0].State)
-	test.Equal(t, wsvc.Running, changes[1].State)
-	test.Equal(t, wsvc.Paused, changes[2].State)
-	test.Equal(t, wsvc.StopPending, changes[3].State)
+	equal(t, 4, len(changes))
+	equal(t, wsvc.StartPending, changes[0].State)
+	equal(t, wsvc.Running, changes[1].State)
+	equal(t, wsvc.Paused, changes[2].State)
+	equal(t, wsvc.StopPending, changes[3].State)
 
-	test.Equal(t, false, wsf.executeReturnedBool)
-	test.Equal(t, uint32(0), wsf.executeReturnedUInt32)
+	equal(t, false, wsf.executeReturnedBool)
+	equal(t, uint32(0), wsf.executeReturnedUInt32)
 
-	test.Nil(t, wsf.ws.getError())
+	assertNil(t, wsf.ws.getError())
 }
 
 func TestRunWindowsServiceInteractive_StopError(t *testing.T) {
@@ -366,11 +365,11 @@ func TestRunWindowsServiceInteractive_StopError(t *testing.T) {
 	err := Run(prg)
 
 	// assert
-	test.Equal(t, "stop error", err.Error())
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
-	test.Equal(t, 0, len(wsf.changes))
+	equal(t, "stop error", err.Error())
+	equal(t, 1, startCalled)
+	equal(t, 1, stopCalled)
+	equal(t, 1, initCalled)
+	equal(t, 0, len(wsf.changes))
 }
 
 func TestRunWindowsServiceNonInteractive_StopError(t *testing.T) {
@@ -391,21 +390,21 @@ func TestRunWindowsServiceNonInteractive_StopError(t *testing.T) {
 	// assert
 	changes := wsf.changes
 
-	test.Equal(t, "stop error", err.Error())
+	equal(t, "stop error", err.Error())
 
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
+	equal(t, 1, startCalled)
+	equal(t, 1, stopCalled)
+	equal(t, 1, initCalled)
 
-	test.Equal(t, 3, len(changes))
-	test.Equal(t, wsvc.StartPending, changes[0].State)
-	test.Equal(t, wsvc.Running, changes[1].State)
-	test.Equal(t, wsvc.StopPending, changes[2].State)
+	equal(t, 3, len(changes))
+	equal(t, wsvc.StartPending, changes[0].State)
+	equal(t, wsvc.Running, changes[1].State)
+	equal(t, wsvc.StopPending, changes[2].State)
 
-	test.Equal(t, true, wsf.executeReturnedBool)
-	test.Equal(t, uint32(2), wsf.executeReturnedUInt32)
+	equal(t, true, wsf.executeReturnedBool)
+	equal(t, uint32(2), wsf.executeReturnedUInt32)
 
-	test.Equal(t, "stop error", wsf.ws.getError().Error())
+	equal(t, "stop error", wsf.ws.getError().Error())
 }
 
 func TestDefaultSignalHandling(t *testing.T) {
@@ -439,8 +438,8 @@ func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
 	}
 
 	// assert
-	test.Equal(t, 1, startCalled)
-	test.Equal(t, 1, stopCalled)
-	test.Equal(t, 1, initCalled)
-	test.Equal(t, 0, len(wsf.changes))
+	equal(t, 1, startCalled)
+	equal(t, 1, stopCalled)
+	equal(t, 1, initCalled)
+	equal(t, 0, len(wsf.changes))
 }

@@ -10,12 +10,13 @@ var signalNotify = signal.Notify
 // before the service is started, and after it's determined if the program
 // is running as a Windows Service.
 //
-// The Start method must be non-blocking.
+// The Start and Init methods must be non-blocking.
 //
 // Implement this interface and pass it to the Run function to start your program.
 type Service interface {
 	// Init is called before the program/service is started and after it's
-	// determined if the program is running as a Windows Service.
+	// determined if the program is running as a Windows Service. This method must
+	// be non-blocking.
 	Init(Environment) error
 
 	// Start is called after Init. This method must be non-blocking.

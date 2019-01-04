@@ -4,7 +4,7 @@ Package svc helps you write Windows Service executables without getting in the w
 To get started, implement the Init, Start, and Stop methods to do
 any work needed during these steps.
 
-Init and Start cannot block. Launch long-running your code in a new Goroutine.
+Init and Start cannot block. Launch long-running code in a new Goroutine.
 
 Stop may block for a short amount of time to attempt clean shutdown.
 

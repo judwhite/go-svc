@@ -15,7 +15,7 @@ import (
 
 func setupWinServiceTest(wsf *mockWinServiceFuncs) {
 	// wsfWrapper allows signalNotify, svcIsInteractive, and svcRun to be set once.
-	// Inidivual test functions set "wsf" to add behavior.
+	// Individual test functions set "wsf" to add behavior.
 	wsfWrapper := &mockWinServiceFuncs{
 		signalNotify: func(c chan<- os.Signal, sig ...os.Signal) {
 			if c == nil {

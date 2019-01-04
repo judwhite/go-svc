@@ -1,12 +1,5 @@
 package svc
 
-import (
-	"path/filepath"
-	"reflect"
-	"runtime"
-	"testing"
-)
-
 type mockProgram struct {
 	start func() error
 	stop  func() error

@@ -21,13 +21,22 @@ func Run(service Service, sig ...os.Signal) error {
 		return err
 	}
 
+	exitChan, err := service.GetExitChan()
+	if err != nil {
+		return err
+	}
+
 	if len(sig) == 0 {
 		sig = []os.Signal{syscall.SIGINT, syscall.SIGTERM}
 	}
 
 	signalChan := make(chan os.Signal, 1)
 	signalNotify(signalChan, sig...)
-	<-signalChan
+
+	select {
+	case <-signalChan:
+	case <-exitChan:
+	}
 
 	return service.Stop()
 }

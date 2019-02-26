@@ -25,6 +25,10 @@ type Service interface {
 	// Stop is called in response to syscall.SIGINT, syscall.SIGTERM, or when a
 	// Windows Service is stopped.
 	Stop() error
+
+	// GetExitChan is called after Start. if the program want exit,
+	// just close this channel and Service will stop
+	GetExitChan() (chan interface{}, error)
 }
 
 // Environment contains information about the environment

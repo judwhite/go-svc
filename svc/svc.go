@@ -1,6 +1,9 @@
 package svc
 
-import "os/signal"
+import (
+	"context"
+	"os/signal"
+)
 
 // Create variable signal.Notify function so we can mock it in tests
 var signalNotify = signal.Notify
@@ -25,6 +28,13 @@ type Service interface {
 	// Stop is called in response to syscall.SIGINT, syscall.SIGTERM, or when a
 	// Windows Service is stopped.
 	Stop() error
+}
+
+// Context interface conteains an optional Context method which a service can implement.
+// when implemented the context.Done() will be used in addition to signal handling to
+// exit a process
+type Context interface {
+	Context() context.Context
 }
 
 // Environment contains information about the environment

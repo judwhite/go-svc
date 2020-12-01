@@ -30,9 +30,9 @@ type Service interface {
 	Stop() error
 }
 
-// Context interface conteains an optional Context method which a service can implement.
-// when implemented the context.Done() will be used in addition to signal handling to
-// exit a process
+// Context interface contains an optional Context function which a Service can implement.
+// When implemented the context.Done() channel will be used in addition to signal handling
+// to exit a process.
 type Context interface {
 	Context() context.Context
 }

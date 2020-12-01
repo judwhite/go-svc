@@ -9,7 +9,7 @@ import (
 
 // Run runs your Service.
 //
-// Run will block until one of the signals specified in sig is received.
+// Run will block until one of the signals specified in sig is received or a provided context is done.
 // If sig is empty syscall.SIGINT and syscall.SIGTERM are used by default.
 func Run(service Service, sig ...os.Signal) error {
 	env := environment{}
@@ -27,7 +27,16 @@ func Run(service Service, sig ...os.Signal) error {
 
 	signalChan := make(chan os.Signal, 1)
 	signalNotify(signalChan, sig...)
-	<-signalChan
+
+	var doneChan <-chan struct{}
+	if s, ok := service.(Context); ok {
+		doneChan = s.Context().Done()
+	}
+
+	select {
+	case <-signalChan:
+	case <-doneChan:
+	}
 
 	return service.Stop()
 }

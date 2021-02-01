@@ -114,7 +114,16 @@ func (ws *windowsService) run() error {
 
 	signalChan := make(chan os.Signal, 1)
 	signalNotify(signalChan, ws.signals...)
-	<-signalChan
+
+	var doneChan <-chan struct{}
+	if s, ok := ws.i.(Context); ok {
+		doneChan = ws.i.Context().Done()
+	}
+
+	select {
+	case <-signalChan:
+	case <-doneChan:
+	}
 
 	err = ws.i.Stop()
 
@@ -133,8 +142,26 @@ func (ws *windowsService) Execute(args []string, r <-chan wsvc.ChangeRequest, ch
 
 	changes <- wsvc.Status{State: wsvc.Running, Accepts: cmdsAccepted}
 loop:
+
+	var doneChan <-chan struct{}
+	if s, ok := ws.i.(Context); ok {
+		doneChan = ws.i.Context().Done()
+	}
+
 	for {
-		c := <-r
+		var c wsvc.ChangeRequest
+		select {
+		case c <- r:
+		case <-doneChan:
+			changes <- wsvc.Status{State: wsvc.StopPending}
+			err := ws.i.Stop()
+			if err != nil {
+				ws.setError(err)
+				return true, 2
+			}
+			break loop
+		}
+
 		switch c.Cmd {
 		case wsvc.Interrogate:
 			changes <- c.CurrentStatus

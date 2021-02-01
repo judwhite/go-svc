@@ -1,0 +1,38 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.15
+    steps:
+      - checkout
+      - run:
+          name: build ./svc
+          command: go build ./svc
+      - run:
+          name: build ./example
+          command: go build -o example-test-build ./example
+      - run: 
+          name: tests
+          command: |
+            go test -cpu 1 -v -race ./...
+            go test -cpu 2 -v -race ./...
+            go test -cpu 4 -v -race ./...
+      - run:
+          name: staticcheck
+          command: |
+            go get honnef.co/go/tools/cmd/staticcheck
+            staticcheck ./...
+      - run:
+          name: gofmt
+          command: |
+            gofmt -l -s -d .
+      - run:
+          name: goimports
+          command: |
+            go get golang.org/x/tools/cmd/goimports
+            goimports -l -d .
+      - run:
+          name: errcheck
+          command: |
+            go get github.com/kisielk/errcheck
+            errcheck -blank -asserts ./...

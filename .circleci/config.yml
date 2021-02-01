@@ -1,0 +1,21 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.15
+    steps:
+      - checkout
+      - run:
+          name: Build ./svc
+          command: go build ./svc
+      - run:
+          name: Build ./example
+          command: go build ./example
+      - run: 
+          name: Run unit tests
+          command: go test -v -race ./...
+      - run:
+          name: Run staticcheck
+          command: |
+            go get honnef.co/go/tools/cmd/staticcheck
+            staticcheck ./...

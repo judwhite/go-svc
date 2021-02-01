@@ -3,7 +3,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/judwhite/go-svc.svg)](https://pkg.go.dev/github.com/judwhite/go-svc)
 [![MIT License](https://img.shields.io/badge/license-MIT-007d9c)](https://github.com/judwhite/go-svc/blob/main/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/judwhite/go-svc)](https://goreportcard.com/report/github.com/judwhite/go-svc)
-[![Build Status](https://circleci.com/gh/judwhite/go-svc.svg?style=svg )](https://circleci.com/gh/judwhite/go-svc)
+[![Build Status](https://github.com/judwhite/go-svc/workflows/tests/badge.svg)](https://github.com/judwhite/go-svc/actions?query=workflow%3Atests)
 
 Go Windows Service wrapper that plays nice with Linux. Windows tests [here](https://github.com/judwhite/go-svc/blob/main/svc_windows_test.go).
 

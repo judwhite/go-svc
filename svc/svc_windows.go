@@ -117,7 +117,7 @@ func (ws *windowsService) run() error {
 
 	var doneChan <-chan struct{}
 	if s, ok := ws.i.(Context); ok {
-		doneChan = ws.i.Context().Done()
+		doneChan = s.Context().Done()
 	}
 
 	select {
@@ -141,27 +141,10 @@ func (ws *windowsService) Execute(args []string, r <-chan wsvc.ChangeRequest, ch
 	}
 
 	changes <- wsvc.Status{State: wsvc.Running, Accepts: cmdsAccepted}
+
 loop:
-
-	var doneChan <-chan struct{}
-	if s, ok := ws.i.(Context); ok {
-		doneChan = ws.i.Context().Done()
-	}
-
 	for {
-		var c wsvc.ChangeRequest
-		select {
-		case c <- r:
-		case <-doneChan:
-			changes <- wsvc.Status{State: wsvc.StopPending}
-			err := ws.i.Stop()
-			if err != nil {
-				ws.setError(err)
-				return true, 2
-			}
-			break loop
-		}
-
+		c := <-r
 		switch c.Cmd {
 		case wsvc.Interrogate:
 			changes <- c.CurrentStatus

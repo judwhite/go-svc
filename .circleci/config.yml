@@ -10,7 +10,7 @@ jobs:
           command: go build ./svc
       - run:
           name: Build ./example
-          command: go build ./example -o output
+          command: go build -o example-test-build ./example
       - run: 
           name: Run unit tests
           command: go test -v -race ./...

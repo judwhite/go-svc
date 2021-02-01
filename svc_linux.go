@@ -3,6 +3,7 @@
 package svc
 
 import (
+	"context"
 	"os"
 	"syscall"
 )
@@ -28,14 +29,16 @@ func Run(service Service, sig ...os.Signal) error {
 	signalChan := make(chan os.Signal, 1)
 	signalNotify(signalChan, sig...)
 
-	var doneChan <-chan struct{}
+	var ctx context.Context
 	if s, ok := service.(Context); ok {
-		doneChan = s.Context().Done()
+		ctx = s.Context()
+	} else {
+		ctx = context.Background()
 	}
 
 	select {
 	case <-signalChan:
-	case <-doneChan:
+	case <-ctx.Done():
 	}
 
 	return service.Stop()

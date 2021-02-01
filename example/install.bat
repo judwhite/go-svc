@@ -8,7 +8,7 @@ if not exist example.exe (
 
 sc create go-svc-example binpath= "%CD%\example.exe" start= auto DisplayName= "go-svc-example"
 sc description go-svc-example "go-svc-example"
-sc start go-svc-example
+net start go-svc-example
 sc query go-svc-example
 
 echo Check example.log

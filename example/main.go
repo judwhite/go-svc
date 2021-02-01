@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/judwhite/go-svc/svc"
+	"github.com/judwhite/go-svc"
 )
 
 // implements svc.Service

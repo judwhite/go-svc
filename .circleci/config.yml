@@ -6,8 +6,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: build ./svc
-          command: go build ./svc
+          name: build
+          command: go build
       - run:
           name: build ./example
           command: go build -o example-test-build ./example

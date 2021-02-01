@@ -26,8 +26,8 @@ func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
 	// arrange
 
 	// sigChan is the chan we'll send to here. if a signal matches a registered signal
-	// type in the Run function (in svc_other.go) the signal will be delegated to the
-	// channel passed to signalNotify, which is created in the Run function in svc_other.go.
+	// type in the Run function (in svc_linux.go) the signal will be delegated to the
+	// channel passed to signalNotify, which is created in the Run function in svc_linux.go.
 	// shortly: we send here and the Run function gets it if it matches the filter.
 	sigChan := make(chan os.Signal)
 

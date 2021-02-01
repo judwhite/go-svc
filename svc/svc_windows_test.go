@@ -16,7 +16,7 @@ import (
 )
 
 func setupWinServiceTest(wsf *mockWinServiceFuncs) {
-	// wsfWrapper allows signalNotify, svcIsInteractive, and svcRun to be set once.
+	// wsfWrapper allows signalNotify, svcIsWindowsService, and svcRun to be set once.
 	// Individual test functions set "wsf" to add behavior.
 	wsfWrapper := &mockWinServiceFuncs{
 		signalNotify: func(c chan<- os.Signal, sig ...os.Signal) {
@@ -39,8 +39,8 @@ func setupWinServiceTest(wsf *mockWinServiceFuncs) {
 				}()
 			}
 		},
-		svcIsInteractive: func() (bool, error) {
-			return wsf.svcIsInteractive()
+		svcIsWindowsService: func() (bool, error) {
+			return wsf.svcIsWindowsService()
 		},
 		svcRun: func(name string, handler wsvc.Handler) error {
 			return wsf.svcRun(name, handler)
@@ -48,13 +48,13 @@ func setupWinServiceTest(wsf *mockWinServiceFuncs) {
 	}
 
 	signalNotify = wsfWrapper.signalNotify
-	svcIsAnInteractiveSession = wsfWrapper.svcIsInteractive
+	svcIsWindowsService = wsfWrapper.svcIsWindowsService
 	svcRun = wsfWrapper.svcRun
 }
 
 type mockWinServiceFuncs struct {
 	signalNotify          func(chan<- os.Signal, ...os.Signal)
-	svcIsInteractive      func() (bool, error)
+	svcIsWindowsService   func() (bool, error)
 	sigChan               chan os.Signal
 	svcRun                func(string, wsvc.Handler) error
 	ws                    *windowsService
@@ -63,7 +63,7 @@ type mockWinServiceFuncs struct {
 	changes               []wsvc.Status
 }
 
-func setWindowsServiceFuncs(isInteractive bool, onRunningSendCmd *wsvc.Cmd) (*mockWinServiceFuncs, chan<- wsvc.ChangeRequest) {
+func setWindowsServiceFuncs(isWindowsService bool, onRunningSendCmd *wsvc.Cmd) (*mockWinServiceFuncs, chan<- wsvc.ChangeRequest) {
 	changeRequestChan := make(chan wsvc.ChangeRequest, 4)
 	changesChan := make(chan wsvc.Status)
 	done := make(chan struct{})
@@ -71,8 +71,8 @@ func setWindowsServiceFuncs(isInteractive bool, onRunningSendCmd *wsvc.Cmd) (*mo
 	var wsf *mockWinServiceFuncs
 	wsf = &mockWinServiceFuncs{
 		sigChan: make(chan os.Signal),
-		svcIsInteractive: func() (bool, error) {
-			return isInteractive, nil
+		svcIsWindowsService: func() (bool, error) {
+			return isWindowsService, nil
 		},
 		svcRun: func(name string, handler wsvc.Handler) error {
 			ws, ok := handler.(*windowsService)
@@ -124,7 +124,7 @@ func testRunWindowsServiceNonInteractive(t *testing.T, svcCmd wsvc.Cmd) {
 	var startCalled, stopCalled, initCalled int
 	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
 
-	wsf, _ := setWindowsServiceFuncs(false, &svcCmd)
+	wsf, _ := setWindowsServiceFuncs(true, &svcCmd)
 
 	// act
 	if err := Run(prg); err != nil {
@@ -159,7 +159,7 @@ func TestRunWindowsServiceNonInteractive_StartError(t *testing.T) {
 	}
 
 	svcStop := wsvc.Stop
-	wsf, _ := setWindowsServiceFuncs(false, &svcStop)
+	wsf, _ := setWindowsServiceFuncs(true, &svcStop)
 
 	// act
 	err := Run(prg)
@@ -191,7 +191,7 @@ func TestRunWindowsServiceInteractive_StartError(t *testing.T) {
 		return errors.New("start error")
 	}
 
-	wsf, _ := setWindowsServiceFuncs(true, nil)
+	wsf, _ := setWindowsServiceFuncs(false, nil)
 
 	// act
 	err := Run(prg)
@@ -217,7 +217,7 @@ func TestRunWindowsService_BeforeStartError(t *testing.T) {
 		return errors.New("before start error")
 	}
 
-	wsf, _ := setWindowsServiceFuncs(false, nil)
+	wsf, _ := setWindowsServiceFuncs(true, nil)
 
 	// act
 	err := Run(prg)
@@ -234,21 +234,21 @@ func TestRunWindowsService_BeforeStartError(t *testing.T) {
 	equal(t, 0, len(changes))
 }
 
-func TestRunWindowsService_IsAnInteractiveSessionError(t *testing.T) {
+func TestRunWindowsService_IsWindowsServiceError(t *testing.T) {
 	// arrange
 	var startCalled, stopCalled, initCalled int
 	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
 
-	wsf, _ := setWindowsServiceFuncs(false, nil)
-	wsf.svcIsInteractive = func() (bool, error) {
-		return false, errors.New("IsAnInteractiveSession error")
+	wsf, _ := setWindowsServiceFuncs(true, nil)
+	wsf.svcIsWindowsService = func() (bool, error) {
+		return false, errors.New("IsWindowsService error")
 	}
 
 	// act
 	err := Run(prg)
 
 	// assert
-	equal(t, "IsAnInteractiveSession error", err.Error())
+	equal(t, "IsWindowsService error", err.Error())
 
 	changes := wsf.changes
 
@@ -265,7 +265,7 @@ func TestRunWindowsServiceNonInteractive_RunError(t *testing.T) {
 	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
 
 	svcStop := wsvc.Stop
-	wsf, _ := setWindowsServiceFuncs(false, &svcStop)
+	wsf, _ := setWindowsServiceFuncs(true, &svcStop)
 	wsf.svcRun = func(name string, handler wsvc.Handler) error {
 		ws, ok := handler.(*windowsService)
 		if !ok {
@@ -297,7 +297,7 @@ func TestRunWindowsServiceNonInteractive_Interrogate(t *testing.T) {
 	var startCalled, stopCalled, initCalled int
 	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
 
-	wsf, changeRequest := setWindowsServiceFuncs(false, nil)
+	wsf, changeRequest := setWindowsServiceFuncs(true, nil)
 
 	time.AfterFunc(50*time.Millisecond, func() {
 		// ignored, PausePending won't be in changes slice
@@ -358,7 +358,7 @@ func TestRunWindowsServiceInteractive_StopError(t *testing.T) {
 		return errors.New("stop error")
 	}
 
-	wsf, _ := setWindowsServiceFuncs(true, nil)
+	wsf, _ := setWindowsServiceFuncs(false, nil)
 
 	go func() {
 		wsf.sigChan <- os.Interrupt
@@ -385,7 +385,7 @@ func TestRunWindowsServiceNonInteractive_StopError(t *testing.T) {
 	}
 
 	shutdownCmd := wsvc.Shutdown
-	wsf, _ := setWindowsServiceFuncs(false, &shutdownCmd)
+	wsf, _ := setWindowsServiceFuncs(true, &shutdownCmd)
 
 	// act
 	err := Run(prg)
@@ -429,7 +429,7 @@ func testSignalNotify(t *testing.T, signal os.Signal, sig ...os.Signal) {
 	var startCalled, stopCalled, initCalled int
 	prg := makeProgram(&startCalled, &stopCalled, &initCalled)
 
-	wsf, _ := setWindowsServiceFuncs(true, nil)
+	wsf, _ := setWindowsServiceFuncs(false, nil)
 
 	go func() {
 		wsf.sigChan <- signal

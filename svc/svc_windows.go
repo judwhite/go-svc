@@ -12,16 +12,16 @@ import (
 )
 
 // Create variables for svc and signal functions so we can mock them in tests
-var svcIsAnInteractiveSession = wsvc.IsAnInteractiveSession
+var svcIsWindowsService = wsvc.IsWindowsService
 var svcRun = wsvc.Run
 
 type windowsService struct {
-	i             Service
-	errSync       sync.Mutex
-	stopStartErr  error
-	isInteractive bool
-	signals       []os.Signal
-	Name          string
+	i                Service
+	errSync          sync.Mutex
+	stopStartErr     error
+	isWindowsService bool
+	signals          []os.Signal
+	Name             string
 }
 
 // Run runs an implementation of the Service interface.
@@ -41,7 +41,7 @@ type windowsService struct {
 func Run(service Service, sig ...os.Signal) error {
 	var err error
 
-	interactive, err := svcIsAnInteractiveSession()
+	isWindowsService, err := svcIsWindowsService()
 	if err != nil {
 		return err
 	}
@@ -51,9 +51,9 @@ func Run(service Service, sig ...os.Signal) error {
 	}
 
 	ws := &windowsService{
-		i:             service,
-		isInteractive: interactive,
-		signals:       sig,
+		i:                service,
+		isWindowsService: isWindowsService,
+		signals:          sig,
 	}
 
 	if ws.IsWindowsService() {
@@ -86,7 +86,7 @@ func (ws *windowsService) getError() error {
 }
 
 func (ws *windowsService) IsWindowsService() bool {
-	return !ws.isInteractive
+	return ws.isWindowsService
 }
 
 func (ws *windowsService) run() error {

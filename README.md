@@ -12,9 +12,23 @@ Go Windows Service wrapper that plays nice with Linux. Windows tests [here](http
 - Used in Production.
 - Maintained. Issues and Pull Requests will be responded to.
 
-## Install
+## Go Modules
 
-`go get -u github.com/judwhite/go-svc`
+* Please note the `import` path and `go.mod` change from `github.com/judwhite/go-svc/svc` to `github.com/judwhite/go-svc` for `v1.2+`
+* `v1.1.3` and earlier can be imported using the previous import path
+* `v1.2+` code is backwards compatible with previous versions
+
+```nginx no-this-isnt-nginx-but-the-syntax-highlighting-works
+module awesomeProject
+
+go 1.15
+
+require github.com/judwhite/go-svc v1.2.0
+```
+
+```go
+import "github.com/judwhite/go-svc"
+```
 
 ## Example
 

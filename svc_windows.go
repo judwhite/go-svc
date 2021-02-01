@@ -3,6 +3,7 @@
 package svc
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"sync"
@@ -22,6 +23,7 @@ type windowsService struct {
 	isWindowsService bool
 	signals          []os.Signal
 	Name             string
+	ctx              context.Context
 }
 
 // Run runs an implementation of the Service interface.
@@ -50,10 +52,18 @@ func Run(service Service, sig ...os.Signal) error {
 		sig = []os.Signal{syscall.SIGINT}
 	}
 
+	var ctx context.Context
+	if s, ok := service.(Context); ok {
+		ctx = s.Context()
+	} else {
+		ctx = context.Background()
+	}
+
 	ws := &windowsService{
 		i:                service,
 		isWindowsService: isWindowsService,
 		signals:          sig,
+		ctx:              ctx,
 	}
 
 	if ws.IsWindowsService() {
@@ -115,14 +125,9 @@ func (ws *windowsService) run() error {
 	signalChan := make(chan os.Signal, 1)
 	signalNotify(signalChan, ws.signals...)
 
-	var doneChan <-chan struct{}
-	if s, ok := ws.i.(Context); ok {
-		doneChan = s.Context().Done()
-	}
-
 	select {
 	case <-signalChan:
-	case <-doneChan:
+	case <-ws.ctx.Done():
 	}
 
 	err = ws.i.Stop()
@@ -142,9 +147,14 @@ func (ws *windowsService) Execute(args []string, r <-chan wsvc.ChangeRequest, ch
 
 	changes <- wsvc.Status{State: wsvc.Running, Accepts: cmdsAccepted}
 
-loop:
 	for {
-		c := <-r
+		var c wsvc.ChangeRequest
+		select {
+		case c = <-r:
+		case <-ws.ctx.Done():
+			c = wsvc.ChangeRequest{Cmd: wsvc.Stop}
+		}
+
 		switch c.Cmd {
 		case wsvc.Interrogate:
 			changes <- c.CurrentStatus
@@ -155,11 +165,8 @@ loop:
 				ws.setError(err)
 				return true, 2
 			}
-			break loop
+			return false, 0
 		default:
-			continue loop
 		}
 	}
-
-	return false, 0
 }

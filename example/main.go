@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/judwhite/go-svc"
 )
@@ -12,12 +14,22 @@ import (
 type program struct {
 	LogFile *os.File
 	svr     *server
+	ctx     context.Context
+}
+
+func (p *program) Context() context.Context {
+	return p.ctx
 }
 
 func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+
 	prg := program{
 		svr: &server{},
+		ctx: ctx,
 	}
+
 	defer func() {
 		if prg.LogFile != nil {
 			if closeErr := prg.LogFile.Close(); closeErr != nil {

@@ -18,11 +18,15 @@ package svc
 
 import (
 	"context"
+	"errors"
+	"os"
 	"os/signal"
 )
 
 // Create variable signal.Notify function so we can mock it in tests
 var signalNotify = signal.Notify
+
+var ErrStop = errors.New("stopping service")
 
 // Service interface contains Start and Stop methods which are called
 // when the service is started and stopped. The Init method is called
@@ -41,9 +45,16 @@ type Service interface {
 	// Start is called after Init. This method must be non-blocking.
 	Start() error
 
-	// Stop is called in response to syscall.SIGINT, syscall.SIGTERM, or when a
+	// Stop is called when Handle() returns ErrStop or when a
 	// Windows Service is stopped.
 	Stop() error
+}
+
+// Handler is an optional interface a Service can implement.
+// When implemented, Handle() is called when a signal is received.
+// Returning ErrStop from this method will result in Service.Stop() being called.
+type Handler interface {
+	Handle(os.Signal) error
 }
 
 // Context interface contains an optional Context function which a Service can implement.

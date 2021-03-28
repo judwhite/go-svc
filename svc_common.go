@@ -36,11 +36,23 @@ func Run(service Service, sig ...os.Signal) error {
 		ctx = context.Background()
 	}
 
-	select {
-	case <-signalChan:
-	case <-ctx.Done():
+	for {
+		select {
+		case s := <-signalChan:
+			if h, ok := service.(Handler); ok {
+				if err := h.Handle(s); err == ErrStop {
+					goto stop
+				}
+			} else {
+				// this maintains backwards compatibility for Services that do not implement Handle()
+				goto stop
+			}
+		case <-ctx.Done():
+			goto stop
+		}
 	}
 
+stop:
 	return service.Stop()
 }
 

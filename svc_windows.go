@@ -52,18 +52,11 @@ func Run(service Service, sig ...os.Signal) error {
 		sig = []os.Signal{syscall.SIGINT}
 	}
 
-	var ctx context.Context
-	if s, ok := service.(Context); ok {
-		ctx = s.Context()
-	} else {
-		ctx = context.Background()
-	}
-
 	ws := &windowsService{
 		i:                service,
 		isWindowsService: isWindowsService,
 		signals:          sig,
-		ctx:              ctx,
+		ctx:              context.Background(),
 	}
 
 	if ws.IsWindowsService() {
@@ -77,6 +70,11 @@ func Run(service Service, sig ...os.Signal) error {
 
 	if err = service.Init(ws); err != nil {
 		return err
+	}
+
+	// call service.Context() after service.Init()
+	if s, ok := service.(Context); ok {
+		ws.ctx = s.Context()
 	}
 
 	return ws.run()

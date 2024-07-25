@@ -49,6 +49,9 @@ type Service interface {
 // Context interface contains an optional Context function which a Service can implement.
 // When implemented the context.Done() channel will be used in addition to signal handling
 // to exit a process.
+//
+// Run will call Context *before* Init, so any Service that implements Context must have
+// this method return non-nil before calling Run.
 type Context interface {
 	Context() context.Context
 }
